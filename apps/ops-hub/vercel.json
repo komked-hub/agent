@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build -- --vercel",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/", "destination": "/api/runtime?__ops_path=/" },
+    { "source": "/login", "destination": "/api/runtime?__ops_path=/login" },
+    { "source": "/oauth/return", "destination": "/api/runtime?__ops_path=/oauth/return" },
+    { "source": "/signin-with-chatgpt", "destination": "/api/runtime?__ops_path=/signin-with-chatgpt" },
+    { "source": "/api/health", "destination": "/api/runtime?__ops_path=/api/health" },
+    { "source": "/api/:section(calendar|site|workspace)/:path+", "destination": "/api/runtime?__ops_path=/api/:section/:path" },
+    { "source": "/api/calendar", "destination": "/api/runtime?__ops_path=/api/calendar" },
+    { "source": "/app.js", "destination": "/api/runtime?__ops_path=/app.js" },
+    { "source": "/calendar.js", "destination": "/api/runtime?__ops_path=/calendar.js" },
+    { "source": "/calendar.css", "destination": "/api/runtime?__ops_path=/calendar.css" },
+    { "source": "/workspace.js", "destination": "/api/runtime?__ops_path=/workspace.js" },
+    { "source": "/workspace.css", "destination": "/api/runtime?__ops_path=/workspace.css" },
+    { "source": "/editor-model.js", "destination": "/api/runtime?__ops_path=/editor-model.js" },
+    { "source": "/editor.js", "destination": "/api/runtime?__ops_path=/editor.js" },
+    { "source": "/editor.css", "destination": "/api/runtime?__ops_path=/editor.css" },
+    { "source": "/stitch.css", "destination": "/api/runtime?__ops_path=/stitch.css" },
+    { "source": "/theme.js", "destination": "/api/runtime?__ops_path=/theme.js" }
+  ]
+}

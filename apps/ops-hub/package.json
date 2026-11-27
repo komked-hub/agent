@@ -1,0 +1,16 @@
+{
+  "name": "komked-operations",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "build": "node scripts/build-site.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1178.0",
+    "google-auth-library": "11.3.4"
+  }
+}

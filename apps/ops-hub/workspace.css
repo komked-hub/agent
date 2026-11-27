@@ -1,0 +1,80 @@
+.stat-link { display: block; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+.stat-link:hover { border-color: #b9cdbf; background-color: #f9fcf9; }
+.stat-link:focus-visible { outline-offset: 2px; }
+.workspace-spaced { margin-top: 1rem; }
+.workspace-list { list-style: none; padding: 0; margin: 0; }
+.workspace-empty { color: var(--muted); font-size: .875rem; line-height: 1.55; margin: .55rem 0 0; }
+.workspace-form { display: grid; gap: .75rem; }
+.workspace-form label:not(.photo-picker) { display: grid; gap: .35rem; min-width: 0; font-size: .875rem; font-weight: 600; }
+.workspace-form fieldset { margin: 0; padding: .75rem; min-width: 0; border: 1px solid var(--line); border-radius: .65rem; }
+.workspace-form legend { padding: 0 .3rem; color: var(--green); font-weight: 700; }
+.workspace-form input:not([type="file"]), .workspace-form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: .55rem .65rem;
+  border: 1px solid #cdd5cf;
+  border-radius: .5rem;
+  background-color: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+}
+.workspace-form textarea { resize: vertical; }
+.workspace-form-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; }
+.workspace-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.receipt-dialog { width: min(39rem, calc(100% - 32px)); max-height: calc(100dvh - 2rem); }
+.receipt-dialog .dialog-head { margin-bottom: .8rem; }
+.receipt-accounts { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: .7rem; }
+.receipt-pickers { justify-content: flex-start; }
+.photo-picker { display: inline-flex; align-items: center; position: relative; cursor: pointer; }
+.photo-picker:focus-within { outline: 2px solid var(--green); outline-offset: 3px; }
+.photo-picker input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.receipt-name-preview { display: grid; gap: .35rem; padding: .65rem .75rem; background: var(--green2); border-radius: .55rem; overflow-wrap: anywhere; }
+.receipt-name-preview span, .workspace-meta { color: var(--muted); font-size: .8125rem; }
+.receipt-name-preview output { font-weight: 600; }
+.receipt-image { display: block; max-width: 100%; max-height: 20rem; object-fit: contain; margin: .5rem auto; }
+#receiptPreview { max-height: 9rem; }
+.review-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: .7rem; padding: .6rem 0; border-top: 1px solid var(--line); }
+.review-row strong { display: block; overflow-wrap: anywhere; }
+.workspace-body { margin: .4rem 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; }
+.workspace-message { border-top: 1px solid var(--line); padding: .9rem 0; }
+.workspace-message:last-child { padding-bottom: 0; }
+.workspace-message details { margin-top: .65rem; }
+.workspace-message summary { color: var(--green); font-weight: 600; cursor: pointer; }
+.workspace-comments { list-style: none; padding: 0 0 0 .75rem; margin: .65rem 0; border-left: 2px solid var(--green2); }
+.workspace-comments li { padding: .35rem .15rem; }
+.workspace-comment-form { background: #f5f8f4; padding: .65rem; border-radius: .55rem; }
+.workspace-preview { display: block; padding: .55rem 0; border-bottom: 1px solid var(--line); font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.workspace-preview:last-child { border-bottom: 0; }
+.task-status-toolbar { margin: 0; }
+@media (max-width: 520px) {
+  .review-row { gap: .35rem; }
+  .receipt-dialog { padding: .9rem; }
+  .receipt-accounts { gap: .35rem; }
+}
+
+.first-actions { align-items: center; }
+.first-actions .primary { display: inline-flex; align-items: center; }
+.first-actions .primary, .first-actions button, #addReceiptButton { min-height: 44px; }
+.receipt-dialog { max-height: calc(var(--receipt-viewport, 100dvh) - 1.5rem); overscroll-behavior: contain; scroll-padding-bottom: 5rem; }
+.receipt-form { gap: 1rem; }
+.receipt-guide, .receipt-field-guide { margin: 0 0 .55rem; }
+.receipt-field-error { color: #963c2b; font-size: .8125rem; }
+.receipt-field-error:empty, #receiptProgress:empty { display: none; }
+.receipt-form [aria-invalid=true] { border: 2px solid #963c2b; }
+.receipt-form :is(input, textarea, button) { scroll-margin: 1rem 0 4.5rem; }
+.receipt-form :is(button, .photo-picker), .receipt-confirmation button { min-height: 44px; }
+.receipt-form #receiptProgress { margin: 0; }
+.receipt-actions { position: sticky; bottom: 0; z-index: 1; padding: .6rem 0 .15rem; border-top: 1px solid var(--line); background: var(--paper); }
+.receipt-confirmation { display: grid; gap: .7rem; text-align: left; overflow-wrap: anywhere; }
+.receipt-confirmation h3, .receipt-confirmation p { margin: 0; }
+.receipt-confirmation h3 { font-size: 1.2rem; }
+.receipt-confirmation .pill { justify-self: start; }
+.receipt-confirmation .workspace-form-actions { margin-top: .5rem; }
+@media (max-width: 460px) {
+  .receipt-dialog { position: fixed; inset-block: calc(var(--receipt-viewport-offset, 0px) + .6rem) auto; margin: 0 auto; }
+  .receipt-actions { justify-content: space-between; }
+  .first-actions { justify-content: flex-start; }
+  .receipt-form .workspace-form-grid:not(.receipt-accounts) { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,76 @@
+.editable-sections { align-items: start; gap: 1rem; }
+.editable-sections .stats { margin-bottom: 0; }
+.page-notes { margin-top: 1rem; }
+.editor-note > p { margin: 0; }
+[data-page-label] { min-width: 0; overflow-wrap: anywhere; }
+
+.editor-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+.editor-grid > details { grid-column: 1 / -1; }
+.editor-grid summary { cursor: pointer; font-weight: 700; }
+.editor-preview { position: sticky; top: 1rem; }
+.editor-field { display: grid; gap: .35rem; min-width: 0; font-weight: 600; font-size: .875rem; }
+.editor-fields { display: grid; gap: .75rem; margin: .75rem 0; }
+.editor-field select, .editor-fields select, .editor-field input, .editor-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: .5rem .7rem;
+  border: 1px solid #cdd5cf;
+  border-radius: .5rem;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+}
+.editor-fields fieldset { background: #f9fbf9; min-width: 0; }
+.editor-module-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .55rem; padding: .55rem 0; }
+.editor-module-row + .editor-module-row, .editor-note-row + .editor-note-row { border-top: 1px solid var(--line); }
+.editor-module-row > strong { align-self: center; font-size: .875rem; }
+.editor-module-actions { display: flex; align-items: center; gap: .3rem; }
+.workspace-form label.editor-checkbox { display: flex; align-items: center; gap: .25rem; margin-right: .25rem; white-space: nowrap; }
+.editor-checkbox input[type="checkbox"] { width: 1.15rem; height: 1.15rem; min-height: 0; padding: 0; accent-color: var(--green); }
+.editor-module-actions button { min-width: 2.5rem; }
+.editor-module-actions button:disabled { opacity: .45; cursor: default; }
+.editor-note-row { display: grid; gap: .45rem; padding: .6rem 0; }
+.editor-note-row button { justify-self: start; }
+.editor-preview h3 { font-size: 1.2rem; margin: .5rem 0; overflow-wrap: anywhere; }
+.editor-preview h4 { font-size: .875rem; color: var(--green); margin: .85rem 0 .35rem; }
+.editor-preview-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .3rem; }
+.editor-preview-list li { border: 1px solid var(--line); border-radius: .4rem; padding: .45rem .6rem; overflow-wrap: anywhere; }
+.editor-muted { color: var(--muted); border-style: dashed !important; }
+.editor-preview > p, #layoutPreview > p { overflow-wrap: anywhere; }
+
+.channel-status { margin: -.75rem 0 1rem; }
+.channel-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.channel-card h2 { font-size: 1.125rem; }
+.channel-card > a, .source-link { color: var(--green); text-decoration: underline; font-size: .875rem; }
+.channel-metrics { margin: .5rem 0 1rem; }
+.channel-metrics > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: .3rem .5rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.channel-metrics dt { font-size: .875rem; font-weight: 600; overflow-wrap: anywhere; }
+.channel-metrics dd { margin: 0; font-weight: 800; font-variant-numeric: tabular-nums; }
+.channel-metrics .workspace-meta { grid-column: 1 / -1; }
+.channel-change { grid-column: 1 / -1; color: var(--green); font-size: .8125rem; }
+.channel-history-head { flex-wrap: wrap; gap: .5rem; }
+.channel-history-head .toolbar { margin: 0; }
+.channel-history { margin-bottom: .8rem; }
+.channel-history li { padding: .75rem 0; border-top: 1px solid var(--line); }
+.channel-record-head { display: flex; align-items: baseline; gap: .4rem .75rem; flex-wrap: wrap; }
+.channel-record-head strong { font-size: .9rem; }
+#channelHistory > button { margin-bottom: .65rem; }
+#channelMetricDialog { max-height: calc(100dvh - 2rem); }
+
+.receipt-camera-panel { margin-top: .6rem; display: grid; gap: .5rem; }
+.receipt-camera-panel video { width: 100%; max-height: min(40dvh, 22rem); object-fit: contain; border-radius: .5rem; background: #15201a; }
+#receiptCameraFallback { margin-top: .45rem; }
+#receiptCameraFallback .receipt-pickers { margin-top: .45rem; }
+
+@media (max-width: 1000px) {
+  .editor-grid { grid-template-columns: 1fr; }
+  .editor-preview { position: static; }
+}
+@media (max-width: 850px) {
+  .channel-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 460px) {
+  .editor-module-row { grid-template-columns: 1fr; }
+  .editor-module-actions { justify-content: flex-end; }
+}

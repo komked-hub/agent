@@ -1,6 +1,6 @@
 # KOMKED Agent — GitHub Starter Kit
 
-This repository starter captures the requirements and initial project structure discussed for a new KOMKED team operations agent. It is documentation and planning scaffolding; it does not contain a production implementation.
+This repository captures the original requirements and project structure for the KOMKED team operations agent. The current team operations web app is in [apps/ops-hub](apps/ops-hub).
 
 ## Documents
 
@@ -27,14 +27,10 @@ This repository starter captures the requirements and initial project structure 
 
 The earlier draft proposed Next.js/TypeScript, Vercel, Supabase PostgreSQL, Google APIs, and a small Python service on the Intel i9 iMac with SQLite/launchd for local tasks. Treat this as a proposal to validate, not a locked decision. See `ARCHITECTURE.md`.
 
-## Getting started
+## Team operations web app
 
-1. Create a private GitHub repository for the project.
-2. Upload the files in this folder, preserving their names.
-3. Review the open decisions in `PRD.md` and `ROADMAP.md` with the team.
-4. Do not put credentials, personal records, receipt images, or production data in Git.
-5. After architecture approval, add application code and environment variable templates.
+Run `npm ci` and `npm run build -- --vercel` from `apps/ops-hub`. See the [Vercel deployment guide](apps/ops-hub/VERCEL_DEPLOY.md) for the Git integration and runtime settings.
 
 ## Status
 
-Requirements summarized from conversation as of 2026-11-25. Items marked `TBD` need team confirmation before production implementation.
+The requirements documents record the original decisions and open questions from 2026-11-25. The web app has a Vercel deployment. Team sign-in and live data access depend on the runtime settings in the deployment guide.
