@@ -111,9 +111,72 @@ function sheets(config) {
   };
 }
 
+function googleWorkspace(config) {
+  const auth = new JWT({
+    email: config.sheets.client_email,
+    key: config.sheets.private_key,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'],
+  });
+  const headers = ['요청 ID', '등록 시각', '결제일', '결제자', '관', '항', '목', '세목', '사용 목적', '파일명', 'Drive 파일 ID'];
+  const extension = {
+    'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif',
+    'image/avif': '.avif', 'image/heic': '.heic',
+  };
+
+  async function receiptFile(receipt) {
+    const query = "'" + config.receiptFolder + "' in parents and trashed = false and appProperties has { key='receiptId' and value='" + receipt.id + "' }";
+    const found = await auth.request({
+      url: 'https://www.googleapis.com/drive/v3/files',
+      params: { q: query, fields: 'files(id,name)', pageSize: 1, spaces: 'drive' }, timeout: 8000,
+    });
+    if (found.data.files?.[0]) return found.data.files[0];
+
+    const boundary = 'komked-' + receipt.id;
+    const metadata = JSON.stringify({
+      name: receipt.title + (extension[receipt.mediaType] || ''),
+      parents: [config.receiptFolder], appProperties: { receiptId: receipt.id },
+    });
+    const body = Buffer.concat([
+      Buffer.from('--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + metadata + '\r\n--' + boundary + '\r\nContent-Type: ' + receipt.mediaType + '\r\n\r\n'),
+      Buffer.from(await receipt.file.arrayBuffer()),
+      Buffer.from('\r\n--' + boundary + '--'),
+    ]);
+    const uploaded = await auth.request({
+      url: 'https://www.googleapis.com/upload/drive/v3/files', method: 'POST',
+      params: { uploadType: 'multipart', fields: 'id,name' },
+      headers: { 'Content-Type': 'multipart/related; boundary=' + boundary }, data: body, timeout: 15000,
+    });
+    return uploaded.data;
+  }
+
+  async function saveReceipt(receipt) {
+    const file = await receiptFile(receipt);
+    const base = 'https://sheets.googleapis.com/v4/spreadsheets/' + config.spreadsheets.receipts + '/values/';
+    const current = await auth.request({ url: base + encodeURIComponent("'시트1'!A1:K10000"), timeout: 8000 });
+    const rows = current.data.values || [];
+    if (!rows.length) {
+      await auth.request({
+        url: base + encodeURIComponent("'시트1'!A1:K1"), method: 'PUT', params: { valueInputOption: 'RAW' },
+        data: { values: [headers] }, timeout: 8000,
+      });
+    }
+    if (rows.some(row => row[0] === receipt.id)) return;
+    const values = [[
+      receipt.id, new Date(receipt.submittedAt).toISOString(), receipt.info.paidDate, receipt.info.payer,
+      receipt.info.accountGroup, receipt.info.accountSection, receipt.info.accountItem, receipt.info.accountSubitem,
+      receipt.info.description, receipt.title, file.id,
+    ]];
+    await auth.request({
+      url: base + encodeURIComponent("'시트1'!A:K") + ':append', method: 'POST',
+      params: { valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS' }, data: { values }, timeout: 8000,
+    });
+  }
+  return { saveReceipt };
+}
+
 export function createBindings(config) {
   return {
-    env: { DB: database(config), BUCKET: privateBucket(config), SITE_LAYOUT_ADMIN_EMAIL: config.admin },
+    env: { DB: database(config), BUCKET: privateBucket(config), GOOGLE_WORKSPACE: googleWorkspace(config), SITE_LAYOUT_ADMIN_EMAIL: config.admin },
     context: { props: { CONNECTORS: sheets(config) } },
   };
 }

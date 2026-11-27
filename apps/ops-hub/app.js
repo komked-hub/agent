@@ -101,11 +101,12 @@ showPage(location.hash.slice(1));
 const taskKey = 'komked-demo-tasks';
 const personalTaskPrefix = 'komked-personal-task:';
 const sampleTasks = [
-  { id: 'expenses', title: '행사 지출 내역 확인하기', area: '재정', due: '오늘 마감' },
-  { id: 'meeting', title: '팀 모임 자료 정리', area: '소통', due: '금요일 마감' },
-  { id: 'schedule', title: '주간 일정 업데이트', area: '운영', due: '이번 주' },
+  { id: 'expenses', title: '행사 지출 내역 확인하기', area: '재정', assignee: '팀 공통', due: '오늘 마감' },
+  { id: 'meeting', title: '팀 모임 자료 정리', area: '소통', assignee: '팀 공통', due: '금요일 마감' },
+  { id: 'schedule', title: '주간 일정 업데이트', area: '운영', assignee: '팀 공통', due: '이번 주' },
 ];
 const taskAreas = ['운영', '소통', '재정', '기타'];
+const taskAssignees = ['팀 공통', '강평강', '심효영', '박정은', '서믿음', '최예찬', '유승종', '원종유'];
 const seoulDay = new Intl.DateTimeFormat('sv-SE', {
   timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
 });
@@ -115,6 +116,7 @@ function loadAddedTasks() {
   try {
     const valid = (task, key) => task?.id === key && typeof task.title === 'string' &&
       taskAreas.includes(task.area) && Number.isFinite(task.createdAt) && typeof task.dueDate === 'string' &&
+      taskAssignees.includes(task.assignee) &&
       (!task.dueDate || (/^\d{4}-\d{2}-\d{2}$/.test(task.dueDate) && !Number.isNaN(Date.parse(task.dueDate))));
     return Object.keys(localStorage).filter(key => key.startsWith(personalTaskPrefix))
       .map(key => load(key, null, task => valid(task, key))).filter(Boolean)
@@ -207,7 +209,7 @@ function renderTasks() {
     button.classList.toggle('done', done);
     button.setAttribute('aria-pressed', String(done));
     button.textContent = done ? '✓' : '';
-    meta.textContent = task.area + ' · ' + (done ? '완료' : due);
+    meta.textContent = [task.area, task.assignee || '팀 공통', done ? '완료' : due].join(' · ');
     pill.className = 'pill ' + (done ? 'info' : urgent ? 'high' : 'normal');
     pill.textContent = done ? '완료' : overdue ? '기한 지남' : urgent ? '오늘 마감' : '진행 중';
   }
@@ -224,7 +226,12 @@ function renderTasks() {
   }
   document.querySelector('[data-task-due]').textContent = '오늘 마감 ' +
     open.filter(task => task.due === '오늘 마감' || task.dueDate === today).length + '건';
+  document.dispatchEvent(new CustomEvent('komked:tasks-changed'));
 }
+
+window.komkedTasks = () => addedTasks.filter(task => !completed.has(task.id)).map(task => ({
+  date: task.dueDate, title: task.title, label: task.assignee, area: task.area,
+}));
 
 function refreshTaskLists() {
   const entries = tasks();
@@ -244,6 +251,7 @@ const taskError = byId('newTaskError');
 
 byId('addTaskButton').addEventListener('click', () => {
   taskForm.reset();
+  byId('newTaskDue').value = seoulDay.format(new Date());
   taskTitle.setCustomValidity('');
   taskError.textContent = '';
   taskDialog.showModal();
@@ -256,7 +264,7 @@ taskForm.addEventListener('submit', event => {
   event.preventDefault();
   const title = taskTitle.value.trim();
   if (!title) {
-    taskTitle.setCustomValidity('업무 이름을 입력해 주세요.');
+    taskTitle.setCustomValidity('내용을 입력해 주세요.');
     taskTitle.reportValidity();
     return;
   }
@@ -265,6 +273,7 @@ taskForm.addEventListener('submit', event => {
     id: personalTaskPrefix + crypto.randomUUID(),
     title,
     area: byId('newTaskArea').value,
+    assignee: byId('newTaskAssignee').value,
     dueDate: byId('newTaskDue').value,
     createdAt: Date.now(),
   };

@@ -243,7 +243,7 @@
       </section>
       <section hidden class="module-content" data-view="team">
         <div class="page-head">
-          <div><h1 tabindex="-1">팀원 현황</h1><p>오늘 연결된 캘린더에 등록된 팀원별 일정을 확인하세요.</p></div>
+          <div><h1 tabindex="-1">팀원 현황</h1><p>팀원별 일정 수와 업무 집중도를 비교해 오늘의 협업 가능 시간과 업무 배분을 확인하세요.</p></div>
           <button type="button" class="secondary" id="refreshTeam">일정 새로고침</button>
         </div>
         <div class="grid editable-sections" data-layout="teamMain">
@@ -268,11 +268,12 @@
             <section class="card module-card channel-card" data-module="instagram"><h2>Instagram</h2><div data-channel-values="instagram"></div><a href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer">Meta Business Suite</a></section>
             <section class="card module-card channel-card" data-module="stibee"><h2>스티비</h2><div data-channel-values="stibee"></div><a href="https://stibee.com/" target="_blank" rel="noopener noreferrer">스티비 관리자</a></section>
           </div>
-          <section class="card module-card" data-module="history">
-            <div class="panel-head channel-history-head"><h2>기록 내역</h2><div class="toolbar"><label for="channelFilter">채널</label><select id="channelFilter"><option value="">전체</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option><option value="stibee">스티비</option></select></div></div>
+          <details class="card module-card channel-history-panel" data-module="history">
+            <summary><span>기록 내역</span><span class="workspace-meta">펼쳐서 이전 기록 보기</span></summary>
+            <div class="panel-head channel-history-head"><div></div><div class="toolbar"><label for="channelFilter">채널</label><select id="channelFilter"><option value="">전체</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option><option value="stibee">스티비</option></select></div></div>
             <div id="channelHistory"></div>
             <a class="source-link" href="https://docs.google.com/spreadsheets/d/{{channels-spreadsheet-id}}/edit" target="_blank" rel="noopener noreferrer">SNS 채널 관리 및 운영 현황 원본</a>
-          </section>
+          </details>
         </div>
       </section>
       <section hidden class="module-content" data-view="settings">
@@ -301,12 +302,12 @@
             </form>
           </section>
           <section class="card module-card editor-preview">
-            <h2>구성 미리보기</h2>
+            <h2>실제 페이지 미리보기</h2>
             <div id="layoutPreview"></div>
             <p class="workspace-empty" id="layoutSaveStatus" role="status"></p>
           </section>
-          <details class="card module-card">
-            <summary>파일명 예시 도구</summary>
+          <details class="card module-card" id="financeFilenameEditor" hidden>
+            <summary>재정 편집 · 파일명 예시 도구</summary>
             <p class="workspace-empty">이 도구의 예시는 이 브라우저에만 저장됩니다. 등록되는 영수증의 이름은 제출 양식의 정보로 자동 생성됩니다.</p>
             <div id="ruleList"></div>
             <div class="toolbar"><button type="button" class="secondary" id="addRule">항목 추가</button><button type="button" class="secondary" id="resetRules">기본값 복원</button></div>
@@ -366,15 +367,16 @@
       </fieldset>
       <fieldset>
         <legend>지출 분류와 설명</legend>
-        <p class="workspace-empty receipt-field-guide">팀에서 안내받은 예산 분류를 관 → 항 → 목 순서로 입력하세요.</p>
+        <p class="workspace-empty receipt-field-guide">예산 분류표에 따라 관 → 항 → 목 → 세목을 차례로 선택하세요.</p>
         <div class="workspace-form-grid receipt-accounts">
-          <label>관<input name="accountGroup" maxlength="30" required aria-describedby="accountGroupError"><span class="receipt-field-error" id="accountGroupError"></span></label>
-          <label>항<input name="accountSection" maxlength="30" required aria-describedby="accountSectionError"><span class="receipt-field-error" id="accountSectionError"></span></label>
-          <label>목<input name="accountItem" maxlength="30" required aria-describedby="accountItemError"><span class="receipt-field-error" id="accountItemError"></span></label>
+          <label>관<select name="accountGroup" required aria-describedby="accountGroupError"></select><span class="receipt-field-error" id="accountGroupError"></span></label>
+          <label>항<select name="accountSection" required aria-describedby="accountSectionError" disabled></select><span class="receipt-field-error" id="accountSectionError"></span></label>
+          <label>목<select name="accountItem" required aria-describedby="accountItemError" disabled></select><span class="receipt-field-error" id="accountItemError"></span></label>
+          <label>세목<select name="accountSubitem" required aria-describedby="accountSubitemError" disabled></select><span class="receipt-field-error" id="accountSubitemError"></span></label>
         </div>
         <label>사용 목적<textarea name="description" rows="3" maxlength="500" required placeholder="어떤 일에 사용했는지 적어 주세요." aria-describedby="descriptionError"></textarea><span class="receipt-field-error" id="descriptionError"></span></label>
       </fieldset>
-      <div class="receipt-name-preview"><span>자동 생성 이름</span><output id="receiptNamePreview"></output></div>
+      <div class="receipt-name-preview"><span>자동 생성 이름과 제출 문구</span><output id="receiptNamePreview"></output><pre id="receiptRecordPreview" class="receipt-record-preview"></pre></div>
       <p id="receiptUploadError" class="task-form-error" role="alert" tabindex="-1"></p>
       <p class="workspace-empty" id="receiptProgress" role="status"></p>
       <div class="workspace-form-actions receipt-actions">
@@ -396,7 +398,7 @@
   <dialog id="addTaskDialog" aria-labelledby="addTaskTitle">
     <div class="dialog-head"><h2 id="addTaskTitle">업무 추가</h2></div>
     <form id="addTaskForm" class="task-form">
-      <label for="newTaskTitle">업무 이름</label>
+      <label for="newTaskTitle">내용</label>
       <input id="newTaskTitle" name="title" maxlength="120" required autofocus>
       <div class="task-form-fields">
         <div>
@@ -409,8 +411,14 @@
           </select>
         </div>
         <div>
-          <label for="newTaskDue">마감일 <span>(선택)</span></label>
-          <input id="newTaskDue" name="due" type="date" max="9999-12-31">
+          <label for="newTaskAssignee">담당자</label>
+          <select id="newTaskAssignee" name="assignee" required>
+            <option value="">선택</option><option>팀 공통</option><option>강평강</option><option>심효영</option><option>박정은</option><option>서믿음</option><option>최예찬</option><option>유승종</option><option>원종유</option>
+          </select>
+        </div>
+        <div>
+          <label for="newTaskDue">캘린더 표시일</label>
+          <input id="newTaskDue" name="due" type="date" max="9999-12-31" required>
         </div>
       </div>
       <p class="task-form-error" id="newTaskError" role="alert"></p>
@@ -429,6 +437,7 @@
   </dialog>
   <script src="/app.js" defer></script>
   <script src="/calendar.js" defer></script>
+  <script src="/finance-categories.js" defer></script>
   <script src="/workspace.js" defer></script>
   <script src="/editor-model.js" defer></script>
   <script src="/editor.js" defer></script>

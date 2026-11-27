@@ -157,13 +157,16 @@ button:disabled { opacity: .58; cursor: default; }
 .calendar-cell-event { background: var(--green2); color: var(--green); }
 .calendar-cell-event.major { background: var(--stitch-amber); color: var(--stitch-amber-ink); }
 .calendar-event-list li { border-color: var(--line); }
-.day-popover { border-color: var(--line); background: var(--paper); box-shadow: var(--shadow); }
+.day-popover { border-color: var(--line); background: rgba(255, 255, 255, .75); box-shadow: var(--shadow); }
 
-.task-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.task-board { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(12rem, .65fr); gap: 1rem; align-items: start; }
 .task-board:has(> [hidden]) { grid-template-columns: minmax(0, 1fr); }
 .task-column { background: var(--stitch-soft); border: 1px solid var(--line); border-radius: 16px; padding: .75rem; min-width: 0; }
 .task-column header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .25rem .3rem .6rem; }
 .task-column h3 { margin: 0; font-size: 1rem; }
+.task-column[data-status="done"] { padding: .55rem; }
+.task-column[data-status="done"] .task-row { grid-template-columns: auto minmax(0, 1fr); }
+.task-column[data-status="done"] .task-row > .pill { display: none; }
 .task-cards { display: grid; gap: .5rem; }
 .task-cards .task-row { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: .65rem; }
 .task-row, .workspace-message, .review-row, .channel-history li { border-color: var(--line); }

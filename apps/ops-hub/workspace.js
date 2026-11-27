@@ -56,6 +56,7 @@
       invalid_details: '입력 내용을 확인해 주세요.',
       invalid_date: '결제일을 확인해 주세요.',
       storage_unavailable: '사이트 저장소를 아직 사용할 수 없어요.',
+      workspace_unavailable: 'Google Sheets와 Drive 저장 연결을 사용할 수 없어요.',
       not_found: '해당 항목을 찾을 수 없어요.',
     };
     return messages[error.message] || '잠시 후 다시 시도해 주세요.';
@@ -82,6 +83,10 @@
   const nativeCamera = $('receiptNativeCamera');
   const gallery = $('receiptGallery');
   const paidDate = receiptForm.elements.namedItem('paidDate');
+  const accountGroup = receiptForm.elements.namedItem('accountGroup');
+  const accountSection = receiptForm.elements.namedItem('accountSection');
+  const accountItem = receiptForm.elements.namedItem('accountItem');
+  const accountSubitem = receiptForm.elements.namedItem('accountSubitem');
   const receiptConfirmation = $('receiptConfirmation');
   const receiptSubmit = $('submitReceipt');
   const receiptProgress = $('receiptProgress');
@@ -220,12 +225,37 @@
     }
   }
 
+  function selectOptions(control, values, placeholder) {
+    const selected = control.value;
+    control.replaceChildren(new Option(placeholder, ''), ...values.map(value => new Option(value, value)));
+    control.disabled = !values.length;
+    if (values.includes(selected)) control.value = selected;
+  }
+
+  function updateAccountChoices(changed) {
+    if (!changed || changed === 'accountGroup') {
+      selectOptions(accountSection, Object.keys(receiptAccountCategories[accountGroup.value] || {}), '항 선택');
+    }
+    if (!changed || ['accountGroup', 'accountSection'].includes(changed)) {
+      selectOptions(accountItem, Object.keys(receiptAccountCategories[accountGroup.value]?.[accountSection.value] || {}), '목 선택');
+    }
+    if (!changed || ['accountGroup', 'accountSection', 'accountItem'].includes(changed)) {
+      selectOptions(accountSubitem, receiptAccountCategories[accountGroup.value]?.[accountSection.value]?.[accountItem.value] || [], '세목 선택');
+    }
+  }
+
+  selectOptions(accountGroup, Object.keys(receiptAccountCategories), '관 선택');
+  updateAccountChoices();
+
   function autoName() {
     const form = new FormData(receiptForm);
-    const parts = ['paidDate', 'accountGroup', 'accountSection', 'accountItem', 'payer']
+    const parts = ['paidDate', 'accountGroup', 'accountSection', 'accountItem', 'accountSubitem', 'payer']
       .map(key => String(form.get(key) || '').trim());
     parts[0] = parts[0].replaceAll('-', '.');
-    $('receiptNamePreview').textContent = parts.every(Boolean) ? parts.join(' - ') : '결제일, 관·항·목과 결제자를 입력하면 이름이 만들어집니다.';
+    const description = String(form.get('description') || '').trim() || '(사용 목적)';
+    $('receiptNamePreview').textContent = parts.every(Boolean) ? parts.join(' - ') : '결제일, 관·항·목·세목과 결제자를 선택하면 이름이 만들어집니다.';
+    $('receiptRecordPreview').textContent = '◎ 결제자\n▶ ' + (parts[5] || '(이름)') + '\n\n◎ 결제내역 설명\n' +
+      (parts.slice(0, 5).every(Boolean) ? parts.slice(0, 5).join(' - ') : '(날짜) - 관 - 항 - 목 - 세목') + '\n▶ ' + description;
   }
 
   function clearPhoto() {
@@ -349,9 +379,10 @@
   const receiptFieldLabels = {
     payer: '결제자를 입력해 주세요.',
     paidDate: '올바른 결제일을 선택해 주세요.',
-    accountGroup: '관을 입력해 주세요.',
-    accountSection: '항을 입력해 주세요.',
-    accountItem: '목을 입력해 주세요.',
+    accountGroup: '관을 선택해 주세요.',
+    accountSection: '항을 선택해 주세요.',
+    accountItem: '목을 선택해 주세요.',
+    accountSubitem: '세목을 선택해 주세요.',
     description: '사용 목적을 입력해 주세요.',
   };
 
@@ -364,6 +395,7 @@
 
   function resetReceiptDraft() {
     receiptForm.reset();
+    updateAccountChoices();
     pendingForm = null;
     submissionId = null;
     editedPaidDate = false;
@@ -476,6 +508,7 @@
   });
   receiptForm.addEventListener('input', event => {
     const name = event.target.name;
+    if (['accountGroup', 'accountSection', 'accountItem'].includes(name)) updateAccountChoices(name);
     if (name === 'paidDate') editedPaidDate = true;
     if (Object.hasOwn(receiptFieldLabels, name)) markReceiptField(name, '');
     if (!pendingForm) submissionId = null;

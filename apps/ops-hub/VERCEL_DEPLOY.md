@@ -17,7 +17,7 @@ Vercel 프로젝트의 **Settings → Environment Variables**에서 **Production
 
 1. Google Cloud에서 웹 애플리케이션 OAuth 클라이언트를 만들고 `https://komked-team-ops-hub.vercel.app/oauth/return`을 승인된 리디렉션 URI로 등록합니다. 클라이언트 ID와 비밀키를 등록합니다.
 2. `KOMKED_ALLOWED_EMAILS`에는 로그인할 팀원 이메일을 쉼표로 구분해 등록합니다. 관리자 한 명을 정해 목록과 `SITE_LAYOUT_ADMIN_EMAIL`에 같은 주소를 등록합니다. Google OAuth 앱이 테스트 상태이면 해당 Google 계정도 테스트 사용자로 등록합니다.
-3. Google Sheets API를 사용 설정하고 일정과 채널 지표 원본 스프레드시트 두 개를 서비스 계정에 뷰어로 공유합니다. 서비스 계정 키 JSON을 등록하고, 문서 주소에서 `/d/` 뒤의 ID를 각각 `GOOGLE_CALENDAR_SPREADSHEET_ID`와 `GOOGLE_CHANNELS_SPREADSHEET_ID`에 등록합니다. 원본 탭 이름은 `vercel-runtime/bindings.mjs`에서 확인할 수 있습니다.
+3. Google Sheets API와 Drive API를 사용 설정합니다. 일정과 채널 지표 원본은 서비스 계정에 뷰어로 공유하고, 영수증 기록 시트와 영수증 폴더는 편집자로 공유합니다. 서비스 계정 키 JSON을 등록하고, 문서 주소에서 `/d/` 뒤의 ID를 각각 `GOOGLE_CALENDAR_SPREADSHEET_ID`, `GOOGLE_CHANNELS_SPREADSHEET_ID`, `GOOGLE_RECEIPTS_SPREADSHEET_ID`에 등록합니다. 영수증 폴더의 ID는 `GOOGLE_RECEIPTS_FOLDER_ID`에 등록합니다.
 4. Cloudflare D1과 비공개 R2 버킷을 지정합니다. D1 토큰에는 쿼리에 필요한 권한을, R2 키에는 대상 버킷의 객체 읽기·쓰기 권한을 부여합니다. 빈 D1을 쓸 경우 `drizzle/` 폴더의 SQL을 번호 순으로 적용합니다.
 5. 기존 데이터를 옮기는 경우에는 승인된 원본에서 D1 행과 R2 객체 키를 함께 이전합니다. 영수증 소유권을 유지하려면 확인된 팀원 이메일과 이전 Sites 내부 사용자 ID를 `KOMKED_LEGACY_OWNER_MAP`에 JSON 객체로 등록하고 담당 계정별 접근을 확인합니다.
 

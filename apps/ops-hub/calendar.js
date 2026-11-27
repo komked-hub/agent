@@ -35,6 +35,7 @@
   let pinchStart;
   let overviewDay;
   let overviewRequest;
+  let hoverTimer;
 
   function overviewVisible() {
     return ['', 'home', 'team'].includes(location.hash.slice(1).split('?')[0]);
@@ -99,6 +100,23 @@
     ));
   }
 
+  function taskEvents(date) {
+    return (window.komkedTasks?.() || []).filter(task => task.date === date).map(task => ({
+      date, title: '업무 · ' + task.title, label: task.label, area: task.area, task: true,
+    }));
+  }
+
+  function personAvatar(name) {
+    const avatar = document.createElement('span');
+    avatar.className = 'calendar-person-avatar';
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.textContent = (name || '팀').slice(0, 1);
+    let hue = 0;
+    for (const character of name || '팀') hue = (hue * 31 + character.charCodeAt(0)) % 360;
+    avatar.style.setProperty('--person-hue', hue);
+    return avatar;
+  }
+
   function renderGrid() {
     const focusedDate = grid.contains(document.activeElement) ? document.activeElement.dataset.date : null;
     const [year, monthNumber] = month.split('-').map(Number);
@@ -118,7 +136,7 @@
       button.setAttribute('aria-pressed', String(date === selected));
       if (date === today) button.setAttribute('aria-current', 'date');
       const types = [];
-      const daily = eventsOn(data?.daily, date, 'daily');
+      const daily = [...eventsOn(data?.daily, date, 'daily'), ...taskEvents(date)];
       const major = eventsOn(data?.major, date, 'major');
       if (daily.length) types.push('하루 일정');
       if (major.length) types.push('주요 일정');
@@ -147,7 +165,8 @@
         for (const [event, type] of entries.slice(0, 3)) {
           const chip = document.createElement('span');
           chip.className = 'calendar-cell-event ' + type;
-          chip.textContent = event.title;
+          if (event.label) chip.append(personAvatar(event.label));
+          chip.append(document.createTextNode(event.title));
           preview.append(chip);
         }
         if (entries.length > 3) {
@@ -171,7 +190,10 @@
   }
 
   function renderSource(type, container = buffers[type]) {
-    const source = data?.[type];
+    let source = data?.[type];
+    const localTasks = type === 'daily' ? taskEvents(selected) : [];
+    let sourceWarning = '';
+    if (!source && localTasks.length) source = { status: 'ok', events: [] };
     if (!source) {
       container.replaceChildren(paragraph(pending ? '일정을 불러오는 중…' : '날짜를 선택하거나 일정을 새로고침해 주세요.'));
       return;
@@ -181,6 +203,10 @@
       const message = needsSignIn ? 'Google Sheets 접근을 확인하려면 다시 연결해 주세요.'
         : source.code === 'connector_unavailable' ? '사이트에서 Google Sheets 연결을 사용할 수 없습니다.'
         : '일정을 읽지 못했습니다. 원본 시트를 확인하거나 잠시 후 다시 시도해 주세요.';
+      if (localTasks.length) {
+        sourceWarning = message;
+        source = { status: 'ok', events: [] };
+      } else {
       container.replaceChildren(paragraph(message));
       if (needsSignIn) {
         const link = document.createElement('a');
@@ -191,8 +217,9 @@
         container.append(link);
       }
       return;
+      }
     }
-    const events = eventsOn(source, selected, type);
+    const events = [...eventsOn(source, selected, type), ...localTasks];
     if (!events.length) {
       container.replaceChildren(paragraph('이 날짜에 등록된 일정이 없습니다.'));
       return;
@@ -211,13 +238,15 @@
       if (tags.some(Boolean)) {
         const meta = document.createElement('p');
         meta.className = 'calendar-event-meta';
-        meta.textContent = tags.filter(Boolean).join(' · ');
+        if (event.label) meta.append(personAvatar(event.label));
+        meta.append(document.createTextNode(tags.filter(Boolean).join(' · ')));
         li.append(meta);
       }
       li.append(title);
       list.append(li);
     }
     container.replaceChildren(list);
+    if (sourceWarning) container.append(paragraph(sourceWarning + ' 브라우저에 추가한 업무는 계속 표시합니다.'));
   }
 
   function positionPopover() {
@@ -229,12 +258,16 @@
     }
     const cell = grid.querySelector('[data-date="' + selected + '"]');
     const rect = cell?.getBoundingClientRect();
+    const monthCard = grid.closest('.calendar-card')?.getBoundingClientRect();
     const { x = rect?.right ?? 16, y = rect?.top ?? 16 } = popupAnchor;
     const gap = 12;
     const { width, height } = popover.getBoundingClientRect();
-    const left = x + gap + width <= window.innerWidth ? x + gap : x - width - gap;
-    popover.style.left = Math.max(gap, Math.min(left, window.innerWidth - width - gap)) + 'px';
-    popover.style.top = Math.max(gap, Math.min(y + gap, window.innerHeight - height - gap)) + 'px';
+    const leftEdge = Math.max(gap, monthCard?.left ?? gap);
+    const rightEdge = Math.min(window.innerWidth - gap, monthCard?.right ?? window.innerWidth - gap);
+    const bottomEdge = Math.min(window.innerHeight - gap, monthCard?.bottom ?? window.innerHeight - gap);
+    const preferred = x + gap + width <= rightEdge ? x + gap : x - width - gap;
+    popover.style.left = Math.max(leftEdge, Math.min(preferred, rightEdge - width)) + 'px';
+    popover.style.top = Math.max(monthCard?.top ?? gap, Math.min(y, bottomEdge - height)) + 'px';
   }
 
   function renderPopover() {
@@ -462,6 +495,22 @@
     selectDay(day.dataset.date);
     if (!event.detail) element('closeDayPopover').focus();
   });
+  grid.addEventListener('pointerover', event => {
+    if (event.pointerType === 'touch') return;
+    const day = event.target.closest('button[data-date]');
+    if (!day || day.contains(event.relatedTarget)) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => {
+      const bounds = day.getBoundingClientRect();
+      popupAnchor = { x: bounds.right, y: bounds.top };
+      popover.hidden = false;
+      selectDay(day.dataset.date);
+    }, 500);
+  });
+  grid.addEventListener('pointerout', event => {
+    const day = event.target.closest('button[data-date]');
+    if (day && !day.contains(event.relatedTarget)) clearTimeout(hoverTimer);
+  });
   scaleButton.addEventListener('click', () => setExpanded(!expanded));
   const touchDistance = touches => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
   grid.addEventListener('touchstart', event => {
@@ -494,6 +543,10 @@
   element('calendarToday').addEventListener('click', () => { closePopover(); selectDay(today); });
   refresh.addEventListener('click', () => void loadMonth(true));
   element('refreshTeam').addEventListener('click', () => void loadOverview(true));
+  document.addEventListener('komked:tasks-changed', () => {
+    render();
+    if (overviewVisible()) void loadOverview(true);
+  });
   document.addEventListener('komked:page', event => {
     closePopover();
     active = event.detail === 'calendar';
@@ -511,6 +564,10 @@
   render();
   updateClock();
   window.setInterval(updateClock, 1000);
+  window.setInterval(() => {
+    if (active) void loadMonth(true);
+    if (overviewVisible()) void loadOverview(true);
+  }, 3_600_000);
   void loadMonth();
   if (overviewVisible()) void loadOverview();
 })();

@@ -35,7 +35,7 @@ const editorPages = {
     groups: { tasksMain: { label: '페이지 섹션', items: { list: '내 업무 목록' } } },
   },
   team: {
-    label: '팀원 현황', heading: '팀원 현황', description: '오늘 연결된 캘린더에 등록된 팀원별 일정을 확인하세요.',
+    label: '팀원 현황', heading: '팀원 현황', description: '팀원별 일정 수와 업무 집중도를 비교해 오늘의 협업 가능 시간과 업무 배분을 확인하세요.',
     groups: { teamMain: { label: '페이지 섹션', items: { members: '팀원 일정' } } },
   },
   analytics: {

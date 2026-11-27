@@ -25,7 +25,8 @@
 .workspace-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .receipt-dialog { width: min(39rem, calc(100% - 32px)); max-height: calc(100dvh - 2rem); }
 .receipt-dialog .dialog-head { margin-bottom: .8rem; }
-.receipt-accounts { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: .7rem; }
+.receipt-accounts { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: .7rem; }
+.receipt-record-preview { margin: .65rem 0 0; padding: .75rem; border-radius: .55rem; background: color-mix(in srgb, var(--green2) 58%, white); white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.55; }
 .receipt-pickers { justify-content: flex-start; }
 .photo-picker { display: inline-flex; align-items: center; position: relative; cursor: pointer; }
 .photo-picker:focus-within { outline: 2px solid var(--green); outline-offset: 3px; }
@@ -51,7 +52,7 @@
 @media (max-width: 520px) {
   .review-row { gap: .35rem; }
   .receipt-dialog { padding: .9rem; }
-  .receipt-accounts { gap: .35rem; }
+  .receipt-accounts { grid-template-columns: 1fr 1fr; gap: .35rem; }
 }
 
 .first-actions { align-items: center; }
@@ -77,4 +78,5 @@
   .receipt-actions { justify-content: space-between; }
   .first-actions { justify-content: flex-start; }
   .receipt-form .workspace-form-grid:not(.receipt-accounts) { grid-template-columns: 1fr; }
+  .receipt-accounts { grid-template-columns: 1fr; }
 }

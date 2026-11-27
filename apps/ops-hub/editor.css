@@ -38,6 +38,15 @@
 .editor-preview-list li { border: 1px solid var(--line); border-radius: .4rem; padding: .45rem .6rem; overflow-wrap: anywhere; }
 .editor-muted { color: var(--muted); border-style: dashed !important; }
 .editor-preview > p, #layoutPreview > p { overflow-wrap: anywhere; }
+.editor-live-shell { border: 1px solid var(--line); border-radius: .75rem; overflow: hidden; background: #f5f7f5; }
+.editor-live-topbar { display: flex; gap: .5rem; align-items: center; padding: .65rem .8rem; border-bottom: 1px solid var(--line); background: var(--paper); }
+.editor-live-header { padding: .9rem; }
+.editor-live-header h3 { margin: 0 0 .25rem; }
+.editor-live-header p { margin: 0; color: var(--muted); font-size: .82rem; }
+.editor-live-group { padding: 0 .75rem .75rem; }
+.editor-live-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.editor-live-card { display: grid; gap: .35rem; min-height: 4rem; padding: .65rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--paper); }
+.editor-live-note { margin: 0 .75rem .75rem; }
 
 .channel-status { margin: -.75rem 0 1rem; }
 .channel-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }

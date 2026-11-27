@@ -64,6 +64,7 @@ function receiptName(info) {
     info.accountGroup,
     info.accountSection,
     info.accountItem,
+    info.accountSubitem,
     info.payer,
   ].join(' - ');
 }
@@ -119,6 +120,7 @@ async function uploadReceipt(request, env, owner) {
     accountGroup: workspaceText(form.get('accountGroup'), 30),
     accountSection: workspaceText(form.get('accountSection'), 30),
     accountItem: workspaceText(form.get('accountItem'), 30),
+    accountSubitem: workspaceText(form.get('accountSubitem'), 80),
     description: workspaceText(form.get('description'), 500),
   };
   if (!validPaidDate(info.paidDate)) throw new WorkspaceInputError('invalid_date');
@@ -132,12 +134,17 @@ async function uploadReceipt(request, env, owner) {
     onlyIf: { etagDoesNotMatch: '*' },
     httpMetadata: { contentType: type },
   });
+  if (!env.GOOGLE_WORKSPACE) throw new WorkspaceInputError('workspace_unavailable', 503);
+  await env.GOOGLE_WORKSPACE.saveReceipt({
+    id, title: receiptName(info), file, mediaType: type, info,
+    submittedAt: Date.now(), submittedBy: workspaceAuthor(request),
+  });
   await env.DB.prepare(`INSERT OR IGNORE INTO receipts (
     owner_id, id, title, payer, paid_date, account_group, account_section,
     account_item, description, media_type, created_at
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .bind(owner, id, receiptName(info), info.payer, info.paidDate, info.accountGroup,
-      info.accountSection, info.accountItem, info.description, type, Date.now()).run();
+      info.accountSection, info.accountItem + ' · ' + info.accountSubitem, info.description, type, Date.now()).run();
   return response({ receipt: await findReceipt(env.DB, owner, id) }, 201);
 }
 

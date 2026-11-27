@@ -14,6 +14,7 @@
     { "source": "/app.js", "destination": "/api/runtime?__ops_path=/app.js" },
     { "source": "/calendar.js", "destination": "/api/runtime?__ops_path=/calendar.js" },
     { "source": "/calendar.css", "destination": "/api/runtime?__ops_path=/calendar.css" },
+    { "source": "/finance-categories.js", "destination": "/api/runtime?__ops_path=/finance-categories.js" },
     { "source": "/workspace.js", "destination": "/api/runtime?__ops_path=/workspace.js" },
     { "source": "/workspace.css", "destination": "/api/runtime?__ops_path=/workspace.css" },
     { "source": "/editor-model.js", "destination": "/api/runtime?__ops_path=/editor-model.js" },

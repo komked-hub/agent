@@ -111,25 +111,39 @@
   function drawPreview(changed = true) {
     const page = selection.value;
     const layout = normalizedPageLayout(page, currentDraft());
-    preview.replaceChildren(element('div', layout.nav, 'workspace-meta'), element('h3', layout.heading));
-    if (layout.description) preview.append(element('p', layout.description));
+    const shell = element('div', undefined, 'editor-live-shell');
+    const top = element('div', undefined, 'editor-live-topbar');
+    top.append(element('strong', 'KOMKED'), element('span', '/ ' + layout.nav, 'workspace-meta'));
+    const header = element('header', undefined, 'editor-live-header');
+    header.append(element('h3', layout.heading));
+    if (layout.description) header.append(element('p', layout.description));
+    shell.append(top, header);
     for (const [group, items] of Object.entries(layout.groups)) {
-      preview.append(element('h4', editorPages[page].groups[group].label));
-      const list = element('ol', undefined, 'editor-preview-list');
+      const section = element('section', undefined, 'editor-live-group');
+      section.append(element('h4', editorPages[page].groups[group].label));
+      const list = element('div', undefined, 'editor-live-cards');
       for (const item of items) {
-        list.append(element('li', (item.title || editorItemLabels[item.id]) + (item.visible ? '' : ' · 숨김'),
-          item.visible ? '' : 'editor-muted'));
+        const card = element('article', undefined, 'editor-live-card' + (item.visible ? '' : ' editor-muted'));
+        card.append(element('strong', item.title || editorItemLabels[item.id]),
+          element('span', item.visible ? '표시 중' : '숨김', 'workspace-meta'));
+        list.append(card);
       }
-      preview.append(list);
+      section.append(list);
+      shell.append(section);
     }
     for (const note of layout.notes) {
-      if (note.title) preview.append(element('h4', note.title));
-      if (note.body) preview.append(element('p', note.body, 'workspace-body'));
+      const card = element('article', undefined, 'editor-live-card editor-live-note');
+      if (note.title) card.append(element('strong', note.title));
+      if (note.body) card.append(element('p', note.body, 'workspace-body'));
+      shell.append(card);
     }
     if (layout.message) {
-      preview.append(element('h4', layout.message.field), element('p', layout.message.template || layout.message.placeholder || '', 'workspace-body'));
-      preview.append(element('span', layout.message.action, 'pill info'));
+      const composer = element('section', undefined, 'editor-live-card');
+      composer.append(element('strong', layout.message.field), element('p', layout.message.template || layout.message.placeholder || '', 'workspace-body'));
+      composer.append(element('span', layout.message.action, 'pill info'));
+      shell.append(composer);
     }
+    preview.replaceChildren(shell);
     if (changed) {
       const previous = pages[page]?.settings ?? defaultPageLayout(page);
       $('layoutSaveStatus').textContent = JSON.stringify(layout) === JSON.stringify(previous)
@@ -153,6 +167,7 @@
 
   function drawEditor() {
     const page = selection.value;
+    $('financeFilenameEditor').hidden = page !== 'finance';
     const layout = currentDraft();
     editor.replaceChildren(
       field('메뉴 이름', layout.nav, value => { layout.nav = value; }),
@@ -289,6 +304,7 @@
   let metricsLoaded = false;
   let manualFailed = false;
   let pageSize = 25;
+  let channelUpdatedAt;
 
   function cardRecords() {
     return [...manualRecords, ...sheetRecords].sort((a, b) => b.day.localeCompare(a.day) ||
@@ -370,7 +386,7 @@
     } else if (metricsLoaded) {
       status.textContent = manualFailed
         ? 'Google Sheets 기록만 표시 중입니다. 직접 기록을 불러오지 못했어요.'
-        : 'Google Sheets와 직접 기록을 표시합니다. 각 수치의 기준일과 집계 기간을 확인하세요.';
+        : '매시간 자동 업데이트 · 최근 ' + new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' }).format(channelUpdatedAt || new Date()) + ' 갱신';
     }
   }
 
@@ -392,6 +408,7 @@
     } else manualFailed = true;
     sourceLoading = false;
     metricsLoaded = true;
+    channelUpdatedAt = new Date();
     renderChannels();
   }
 
@@ -488,5 +505,8 @@
     if (event.detail === 'channels' && !metricsLoaded) void loadChannels();
   });
   if (location.hash.slice(1).split('?')[0] === 'channels') void loadChannels();
+  window.setInterval(() => {
+    if (location.hash.slice(1).split('?')[0] === 'channels') void loadChannels();
+  }, 3_600_000);
   void loadSettings();
 })();

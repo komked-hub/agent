@@ -66,7 +66,9 @@ export function readDeploymentConfig(env) {
     spreadsheets: {
       calendar: spreadsheetId(env, 'GOOGLE_CALENDAR_SPREADSHEET_ID'),
       channels: spreadsheetId(env, 'GOOGLE_CHANNELS_SPREADSHEET_ID'),
+      receipts: spreadsheetId(env, 'GOOGLE_RECEIPTS_SPREADSHEET_ID'),
     },
+    receiptFolder: spreadsheetId(env, 'GOOGLE_RECEIPTS_FOLDER_ID'),
     cloudflareAccount, d1Id, d1Token: requireSetting(env, 'CLOUDFLARE_D1_API_TOKEN'),
     r2Bucket: requireSetting(env, 'CLOUDFLARE_R2_BUCKET'),
     r2Access: requireSetting(env, 'CLOUDFLARE_R2_ACCESS_KEY_ID'),
