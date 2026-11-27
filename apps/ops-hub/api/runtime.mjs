@@ -55,11 +55,31 @@ function json(payload, status) {
   return Response.json(payload, { status, headers: privateHeaders });
 }
 
-function setupStatus() {
-  return new Response('<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KOMKED 팀 운영 공간</title><body><main><h1>KOMKED 팀 운영 공간</h1><p>Vercel 배포가 준비되었습니다. 팀 로그인과 저장소를 연결하면 운영 공간을 열 수 있습니다.</p></main></body></html>', {
-    status: 503,
-    headers: { ...privateHeaders, 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'" },
-  });
+function safeSourceId(name) {
+  const value = process.env[name]?.trim() || '';
+  return /^[A-Za-z0-9_-]{20,100}$/.test(value) ? value : '';
+}
+
+async function setupMode(request, url) {
+  if (url.pathname === '/login') {
+    return new Response(null, { status: 303, headers: { ...privateHeaders, Location: '/' } });
+  }
+  if (url.pathname === '/api/calendar/time' && request.method === 'GET') {
+    return json({ now: Date.now(), mode: 'limited' }, 200);
+  }
+  const isAsset = workspaceAssets.test(url.pathname);
+  if ((url.pathname !== '/' && !isAsset) || !['GET', 'HEAD'].includes(request.method)) {
+    return json({ error: 'setup_required' }, 503);
+  }
+  const sourceRequest = new Request(url, { method: request.method, headers: request.headers });
+  const response = await app.fetch(sourceRequest, {}, {});
+  if (url.pathname !== '/' || request.method === 'HEAD' || !response.ok) return withPrivateHeaders(response);
+  const notice = `<div role="status" style="position:relative;z-index:20;padding:.7rem 1rem;background:#fff4d6;color:#5c4310;border-bottom:1px solid #e5c879;font:600 14px/1.5 system-ui,sans-serif">연결 준비 모드 · 화면과 브라우저 저장 기능은 사용할 수 있습니다. 팀 로그인, 공용 저장, 영수증 업로드와 관리 변경은 운영 연결이 완료될 때까지 잠겨 있습니다.</div>`;
+  const html = (await response.text())
+    .replace('<body>', '<body>' + notice)
+    .replaceAll('{{calendar-spreadsheet-id}}', safeSourceId('GOOGLE_CALENDAR_SPREADSHEET_ID'))
+    .replaceAll('{{channels-spreadsheet-id}}', safeSourceId('GOOGLE_CHANNELS_SPREADSHEET_ID'));
+  return withPrivateHeaders(response, html);
 }
 
 export default {
@@ -70,12 +90,9 @@ export default {
 
     if (url.pathname === '/api/health') {
       if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
-      return json({ status: config ? 'configured' : 'setup_required' }, config ? 200 : 503);
+      return json({ status: config ? 'configured' : 'limited' }, 200);
     }
-    if (!config) {
-      if (url.pathname === '/' || url.pathname === '/login') return setupStatus();
-      return json({ error: 'setup_required' }, 503);
-    }
+    if (!config) return setupMode(request, url);
     if (url.origin !== config.origin) {
       if (url.pathname === '/' && request.method === 'GET') {
         return new Response(null, { status: 303, headers: { ...privateHeaders, Location: config.origin + '/' } });
